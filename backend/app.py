@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from model.request import UpdateStockPriceRequest, UpdateStockQuantityRequest
 from components.database import InventoryDB
+from service import data_service
 
 
 app = FastAPI()
@@ -42,7 +43,12 @@ def update_stock_price_by_category(request: UpdateStockPriceRequest):
 
 @app.get("/inventory_stats")
 def get_inventory_stats():
-    return inventory_db.get_inventory_stats()
+    return data_service.get_stats()
+
+
+@app.get("/inventory_category")
+def get_inventory_categories():
+    return data_service.get_inventory_categories()
 
 
 if __name__ == "__main__":

@@ -23,7 +23,8 @@ class InventoryDB:
         self.create_connection()
         cursor = self.conn.cursor()
         cursor.execute('SELECT * FROM items')
-        items = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]  # Get column names
+        items = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert rows to dictionaries
         self.conn.close()
         return items
 
