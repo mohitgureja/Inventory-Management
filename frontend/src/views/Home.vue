@@ -1,8 +1,6 @@
 <template>
   <ContentBox>
-
-          <InventoryList />
-
+    <InventoryList />
   </ContentBox>
 </template>
 
@@ -18,10 +16,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.scrollable-table-container {
-  max-height: 500px; /* You can adjust this value */
-  overflow-y: auto;  /* Allow vertical scrolling */
-}
-</style>

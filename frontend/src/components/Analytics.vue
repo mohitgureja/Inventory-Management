@@ -1,94 +1,95 @@
 <template>
-  <v-dialog v-model="showAnalytics" max-width="800px">
-    <v-card elevation="4">
-      <v-card-title>
+  <v-dialog v-model="inventoryStore.showAnalytics" max-width="800px">
+    <v-card>
+      <v-card-title class="d-flex justify-center align-center">
         <span class="text-h5 font-weight-bold">Inventory Analytics</span>
       </v-card-title>
 
       <v-card-text>
         <!-- Insights Table -->
-        <div class="insights">
-          <h3 class="text-xl font-semibold">Key Insights</h3>
-          <table>
+        <table>
+          <thead>
             <tr>
               <th>Metric</th>
               <th>Item</th>
               <th>Value</th>
             </tr>
+          </thead>
+          <tbody>
             <tr>
-              <td>Item with max Stock</td>
-              <td>{{ insights?.max_stock?.item_name }}</td>
-              <td>{{ insights?.max_stock?.stock_quantity }}</td>
+              <td>Item with Maximum Stock</td>
+              <td>{{ inventoryStore.insights?.max_stock?.item_name }}</td>
+              <td>{{ inventoryStore.insights?.max_stock?.stock_quantity }}</td>
             </tr>
             <tr>
-              <td>Item with min Stock</td>
-              <td>{{ insights?.min_stock?.item_name }}</td>
-              <td>{{ insights?.min_stock?.stock_quantity }}</td>
+              <td>Item with Minimum Stock</td>
+              <td>{{ inventoryStore.insights?.min_stock?.item_name }}</td>
+              <td>{{ inventoryStore.insights?.min_stock?.stock_quantity }}</td>
             </tr>
             <tr>
-              <td>Item with max Price</td>
-              <td>{{ insights?.max_price?.item_name }}</td>
-              <td>{{ insights?.max_price?.price }}</td>
+              <td>Item with Maximum Price</td>
+              <td>{{ inventoryStore.insights?.max_price?.item_name }}</td>
+              <td>{{ inventoryStore.insights?.max_price?.price }}</td>
             </tr>
             <tr>
-              <td>Item with min Price</td>
-              <td>{{ insights?.min_price?.item_name }}</td>
-              <td>{{ insights?.min_price?.price }}</td>
+              <td>Item with Minimum Price</td>
+              <td>{{ inventoryStore.insights?.min_price?.item_name }}</td>
+              <td>{{ inventoryStore.insights?.min_price?.price }}</td>
             </tr>
-          </table>
-        </div>
-
-        <!-- Loading state -->
-        <v-progress-circular v-if="isLoading" indeterminate color="primary"></v-progress-circular>
+          </tbody>
+        </table>
 
         <!-- Charts -->
-        <div class="chart-container">
-          <BarChart :chartData="barChartData" :chartOptions="barChartOptions" />
-          <PieChart :chartData="pieChartData" :chartOptions="pieChartOptions" />
+        <div class="bar-chart-container">
+          <Bar :data="barChartData" :options="barChartOptions" />
+        </div>
+        <div class="pie-chart-container">
+          <Pie :data="pieChartData" :options="pieChartOptions" />
         </div>
       </v-card-text>
 
       <v-card-actions>
-        <v-btn @click="showAnalytics = false" color="primary">Close</v-btn>
+        <v-btn @click="inventoryStore.toggleAnalytics" color="primary">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { useInventoryStore } from '@/stores/InventoryStore'; // Import Pinia store
+import { useInventoryStore } from '@/stores/InventoryStore';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from "chart.js";
-import { storeToRefs } from "pinia";
-import BarChart from '@/components/BarChart.vue'; // Import the BarChart component
-import PieChart from '@/components/PieChart.vue'; // Import the PieChart component
+import { onMounted } from "vue";
+import { Bar, Pie } from 'vue-chartjs';
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 export default {
   name: "Analytics-Page",
   components: {
-    BarChart,
-    PieChart,
+    Pie,
+    Bar
   },
   setup() {
-    const inventoryStore = useInventoryStore(); // Use Pinia store
-    const { showAnalytics, categoryStockData, valueData, insights } = storeToRefs(inventoryStore);
+    const inventoryStore = useInventoryStore();
 
-    // Fetch stats and handle loading state
-    inventoryStore.fetchStats();
+    // Fetch insights when the component mounts
+    onMounted(async () => {
+      await inventoryStore.fetchStats();
+    });
 
-    return { showAnalytics, categoryStockData, valueData, insights }; // Bind store data to the component
+    return { inventoryStore };
   },
   computed: {
     // Bar chart data
     barChartData() {
       return {
-        labels: this.categoryStockData.map(item => item.category),
+        labels: this.inventoryStore.categoryStockData.map(item => item.category),
         datasets: [
           {
             label: 'Stock Quantity',
-            data: this.categoryStockData.map(item => item.stock_quantity),
+            data: this.inventoryStore.categoryStockData.map(item => item.stock_quantity),
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
@@ -96,39 +97,39 @@ export default {
         ],
       };
     },
-barChartOptions() {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-    plugins: {
-      title: {
-        display: true,
-        text: 'Total Stocks per Category', // Title for Bar Chart
-        font: {
-          size: 18, // Font size of the title
+    barChartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
         },
-        padding: {
-          top: 10,
-          bottom: 30,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Total Stocks per Category',
+            font: {
+              size: 18,
+            },
+            padding: {
+              top: 10,
+              bottom: 30,
+            },
+          },
         },
-      },
+      };
     },
-  };
-},
 
     // Pie chart data
     pieChartData() {
       return {
-        labels: this.valueData.map(item => item.category),
+        labels: this.inventoryStore.valueData.map(item => item.category),
         datasets: [
           {
             label: 'Inventory Value',
-            data: this.valueData.map(item => item.inventory_value),
+            data: this.inventoryStore.valueData.map(item => item.inventory_value),
             backgroundColor: [
               'rgba(255, 99, 132, 0.2)',
               'rgba(54, 162, 235, 0.2)',
@@ -152,48 +153,37 @@ barChartOptions() {
         ],
       };
     },
-pieChartOptions() {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      title: {
-        display: true,
-        text: 'Total Value per Category', // Title for Pie Chart
-        font: {
-          size: 18, // Font size of the title
+    pieChartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Total Value per Category',
+            font: {
+              size: 18,
+            },
+            padding: {
+              top: 10,
+              bottom: 30,
+            },
+          },
         },
-        padding: {
-          top: 10,
-          bottom: 30,
-        },
-      },
+      };
     },
-  };
-},
-
   },
 };
 </script>
 
-<style scoped>
-.chart-container {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-.insights {
-  margin-bottom: 20px;
-}
-
+<style>
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
@@ -201,5 +191,20 @@ th, td {
 
 th {
   background-color: #f4f4f4;
+}
+
+.bar-chart-container {
+  width: 90%;
+  height: 400px; 
+  margin-top: 40px;
+  padding-left: 15%; 
+}
+
+
+.pie-chart-container {
+  width: 90%;
+  height: 400px;
+  margin-top: 60px;
+  padding-left: 15%; 
 }
 </style>

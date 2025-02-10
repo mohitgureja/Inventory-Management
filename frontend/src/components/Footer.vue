@@ -15,6 +15,6 @@ export default {
 
 <style>
 .v-footer {
-  padding: 0%;
+  padding: 0% !important;
 }
 </style>

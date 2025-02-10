@@ -11,7 +11,7 @@ def get_stats():
     category_stock_data = df.groupby("category")["stock_quantity"].sum().reset_index().to_dict(orient="records")
 
     # Aggregate max and min price per category (For Bar Chart)
-    category_price_data = df.groupby('category')['price'].agg(['max', 'min']).reset_index()
+    category_price_data = df.groupby('category')['price'].agg(['max', 'min']).reset_index().to_dict(orient="records")
 
     # Aggregate total inventory value per category (For Pie Chart)
     df["inventory_value"] = df["stock_quantity"] * df["price"]

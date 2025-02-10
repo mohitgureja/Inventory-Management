@@ -47,7 +47,6 @@ class InventoryDB:
         :param item_id: Item ID to be updated
         :param column: Column to be updated
         :param new_data: New value to be updated
-        :return: Id of the updated item
         """
         valid_columns = {"stock_quantity", "price", "name"}  # Add valid column names here
 

@@ -5,14 +5,15 @@ const BACKEND_URL = 'http://localhost:8000';
 export const useInventoryStore = defineStore('inventory', {
     state: () => ({
         items: [],
-        categories: [], // Categories will be an array of strings
-        isNameFormVisible: false,
+        categories: [], 
         isStockPriceFormVisible: false,
-        categoryForPriceUpdate: null, // Track the category for price update
         showAnalytics: false,
         categoryStockData: [],
         valueData: [],
         insights: {},
+        isUpdateStockQDialogVisible: false,
+        selectedCategory: null,
+        newStockPrice: null
     }),
     actions: {
         async fetchItems() {
@@ -35,7 +36,7 @@ export const useInventoryStore = defineStore('inventory', {
         async fetchCategories() {
             try {
                 const response = await axios.get(BACKEND_URL + '/inventory_category');
-                this.categories = response.data; // Now categories is an array of strings
+                this.categories = response.data;
             } catch (error) {
                 console.error("Error fetching categories", error);
             }
@@ -45,27 +46,28 @@ export const useInventoryStore = defineStore('inventory', {
                 item_id,
                 new_quantity,
             });
-            await this.fetchItems(); // Automatically refresh the inventory after updating
+            await this.fetchItems();
         },
         async updateStockPriceByCategory(category, new_price) {
             await axios.put(BACKEND_URL + '/update_stock_price_by_category', {
                 category,
                 new_price,
             });
-            await this.fetchItems(); // Automatically refresh the inventory after updating
-        },
-
-        // Actions to control the visibility of the forms
-        openStockPriceForm(category) {
-            this.categoryForPriceUpdate = category; // Store the category for price update
-            this.isStockPriceFormVisible = true;
+            await this.fetchItems();
         },
         closeStockPriceForm() {
             this.isStockPriceFormVisible = false;
-            this.categoryForPriceUpdate = null; // Clear the stored category after closing the form
+            this.selectedCategory = null;
+            this.newStockPrice = null
         },
         toggleAnalytics() {
             this.showAnalytics = !this.showAnalytics;
         },
+        toggleUpdatetockQDialog() {
+            this.isUpdateStockQDialogVisible = !this.isUpdateStockQDialogVisible;
+        },
+        toggleStockPriceUpdateDialog() {
+            this.isStockPriceFormVisible = !this.isStockPriceFormVisible
+        }
     },
 });
