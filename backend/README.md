@@ -48,8 +48,3 @@ Once the backend is complete, build a frontend application with the following fe
 
 - **Time limit**: 2 hours
 - Package your solution as a **zip file**
-- Send the zip file matching the deadline to <roman.bange@statworx.com> or the person who provided you this test case
-
-**Good Luck!**
-
-We are excited to see your solution!
